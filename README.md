@@ -206,11 +206,14 @@ Full toolkit docs: [`toolkit/README.md`](toolkit/README.md).
 
 ```
 lan-recon/
-├── toolkit/          # lan-recon.sh + docs  (the read-only tool)
+├── toolkit/          # the read-only tools:
+│   ├── lan-recon.sh       #   internal LAN discovery + asset inventory
+│   ├── external-surface.sh #   internet-facing exposure check (risk-classified)
+│   └── report-gen.sh      #   inventory + findings → scaffolded client report
 ├── methodology/      # the four-phase assessment methodology + honesty-banding
 ├── templates/        # authorization · report · findings register · remediation
 ├── research/         # SOHO/SMB vulnerability-class knowledge base
-├── examples/         # a sanitized sample inventory (what the tool produces)
+├── examples/         # a sanitized sample inventory + sample client report
 └── AUTHORIZATION.md  # the rules-of-engagement doctrine
 ```
 
@@ -219,10 +222,12 @@ lan-recon/
 ## 💻 Supported OS
 
 - **macOS** — first-class (uses `arp`, `dns-sd`, `smbutil`, all built in).
-- **Linux** — the core sweep/port/banner path is portable; swap `avahi-browse` for
-  mDNS and `nmblookup` for NetBIOS. (See inline notes in the script.)
+- **Linux** — fully supported (uses `ip`/`arp`, `avahi-browse` for mDNS, `nmblookup`
+  for NetBIOS). The probe host's OS is **auto-detected** and the right tools are used
+  per-OS — nothing to configure. CI runs the smoke on both ubuntu and macOS.
 
-Requires `perl` (bounded timeouts), `nc`, `curl`, `ping`, `arp`.
+Core deps everywhere: `perl` (bounded timeouts), `nc`, `curl`, `ping`. On Linux,
+install `avahi-utils` + `samba-common-bin` for full mDNS + NetBIOS coverage.
 
 ---
 
@@ -234,8 +239,8 @@ or lack written permission to test may be illegal.
 
 ## 🤝 Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). New device fingerprints, Linux-portability
-patches, and methodology refinements are especially welcome.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). New device fingerprints, an offline OUI
+database, and methodology refinements are especially welcome.
 
 ## 📄 License
 

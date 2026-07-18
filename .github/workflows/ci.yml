@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: ShellCheck (lint the tool)
-        run: shellcheck toolkit/lan-recon.sh
+      - name: ShellCheck (lint all tools)
+        run: shellcheck toolkit/*.sh
 
   smoke:
     # Validate the tool on both supported OSes (macOS-first, Linux-portable).
@@ -32,8 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Syntax check
-        run: bash -n toolkit/lan-recon.sh
+      - name: Syntax check (all tools)
+        run: for f in toolkit/*.sh; do bash -n "$f"; done
 
       - name: Smoke — authorization gate + negative controls must bite
         run: |
@@ -55,3 +55,23 @@ jobs:
           fi
 
           echo "PASS: authorization gate + negative controls bite on ${{ matrix.os }}"
+
+      - name: Smoke — external-surface.sh gate bites
+        run: |
+          set -e
+          chmod +x toolkit/external-surface.sh
+          ./toolkit/external-surface.sh --target 192.0.2.1 --yes --authorized-by "CI" --dry-run
+          if ./toolkit/external-surface.sh --target 192.0.2.1 --yes --dry-run 2>/dev/null; then
+            echo "FAIL: external-surface gate did not bite"; exit 1
+          fi
+          echo "PASS: external-surface gate bites"
+
+      - name: Smoke — report-gen.sh assembles a report
+        run: |
+          set -e
+          chmod +x toolkit/report-gen.sh
+          printf '# LAN Inventory\n\n| IP | MAC | Vendor (OUI) | Open ports | Name | Notes |\n|---|---|---|---|---|---|\n| 192.0.2.10 | aa:bb:cc:00:11:22 | Example | 22,443 | host-a | |\n' > /tmp/inv.md
+          ./toolkit/report-gen.sh --inventory /tmp/inv.md --findings templates/findings-register.csv --client "CI Client" --out /tmp/report.md
+          grep -q "Network Security Assessment — CI Client" /tmp/report.md
+          grep -q "192.0.2.10" /tmp/report.md
+          echo "PASS: report-gen assembles a report"
