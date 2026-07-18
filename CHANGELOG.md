@@ -6,6 +6,9 @@ and [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Live landing page** (GitHub Pages, `docs/`) — a one-page walkthrough with the
+  authorization + honesty-banding ethos and a live sample inventory, so the tool can
+  be seen without cloning. Real screenshots wired into the README.
 - **`external-surface.sh`** — authorized, read-only internet-facing exposure check:
   connect-probes a public target and risk-classifies each open port (CRITICAL /
   HIGH / MEDIUM / INFO), with an external-vantage caveat stated in the report.

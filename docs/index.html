@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>lan-recon — read-only, authorization-gated network discovery</title>
+<meta name="description" content="A non-intrusive network reconnaissance tool that refuses to run unauthorized and never presents a guess as a fact. Read-only, evidence-graded LAN discovery + asset inventory, plus the assessment methodology behind it." />
+<meta property="og:title" content="lan-recon — read-only, authorization-gated network discovery" />
+<meta property="og:description" content="Read-only, evidence-graded LAN discovery + asset inventory. Refuses to run unauthorized; never dresses a guess as a fact." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0e14; --bg-2:#0f141d; --panel:#131a24; --panel-2:#161e2a;
+    --border:#1e2937; --text:#e6edf3; --muted:#8b98a9; --faint:#5b6879;
+    --cyan:#22d3ee; --violet:#a855f7; --green:#22c55e; --amber:#f59e0b; --slate:#64748b;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(1200px 600px at 70% -10%,#12203a33,transparent),var(--bg);
+    color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+  .tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--cyan);background:#22d3ee14;border:1px solid #22d3ee33;
+    padding:5px 12px;border-radius:999px}
+  /* hero */
+  header{padding:96px 0 64px;text-align:center;position:relative}
+  h1{font-size:clamp(40px,7vw,72px);line-height:1.02;font-weight:800;margin:22px 0 0;letter-spacing:-.02em}
+  h1 .accent{background:linear-gradient(120deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(17px,2.4vw,21px);color:var(--muted);max-width:680px;margin:20px auto 0}
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+  .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;padding:13px 22px;border-radius:12px;
+    border:1px solid var(--border);transition:.15s;font-size:15px}
+  .btn.primary{background:linear-gradient(120deg,var(--cyan),var(--violet));color:#06121f;border:0}
+  .btn.primary:hover{filter:brightness(1.08);text-decoration:none;transform:translateY(-1px)}
+  .btn.ghost{background:#ffffff08;color:var(--text)}
+  .btn.ghost:hover{background:#ffffff12;text-decoration:none}
+  .pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+  .pill{font-size:12.5px;font-weight:600;color:var(--muted);background:var(--panel);border:1px solid var(--border);
+    padding:6px 12px;border-radius:8px}
+  .pill b{color:var(--text)}
+  /* sections */
+  section{padding:52px 0;border-top:1px solid var(--border)}
+  h2{font-size:clamp(24px,3.4vw,32px);font-weight:750;margin:0 0 8px;letter-spacing:-.01em}
+  .lead{color:var(--muted);max-width:720px;margin:0 0 30px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border);
+    border-radius:16px;padding:24px}
+  .card h3{margin:0 0 8px;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px;
+    background:#22d3ee14;border:1px solid #22d3ee33}
+  .ico.v{background:#a855f714;border-color:#a855f733}
+  /* terminal */
+  .term{background:#080c12;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:8px;
+    box-shadow:0 24px 60px -30px #000}
+  .term .bar{display:flex;gap:7px;padding:12px 15px;background:#0c1119;border-bottom:1px solid var(--border)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .term pre{margin:0;padding:18px 20px;font-family:var(--mono);font-size:12.5px;line-height:1.7;overflow-x:auto;color:#c9d4e0}
+  .c-cy{color:var(--cyan)} .c-vi{color:var(--violet)} .c-gr{color:var(--green)}
+  .c-am{color:var(--amber)} .c-mu{color:var(--faint)}
+  /* table */
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;overflow:hidden;border-radius:12px;border:1px solid var(--border)}
+  .tbl th,.tbl td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--border)}
+  .tbl th{background:var(--panel);color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+  .tbl td{color:var(--text)}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl .mono{font-size:12.5px;color:var(--muted)}
+  .band{font-weight:700;font-size:12px;padding:2px 9px;border-radius:6px;white-space:nowrap}
+  .b-v{color:var(--green);background:#22c55e14} .b-i{color:var(--amber);background:#f59e0b14} .b-u{color:var(--slate);background:#64748b1f}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;counter-reset:s}
+  @media(max-width:720px){.steps{grid-template-columns:1fr 1fr}}
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px}
+  .step .n{font-family:var(--mono);color:var(--cyan);font-weight:600;font-size:13px}
+  .step h4{margin:8px 0 4px;font-size:15px}
+  .step p{margin:0;color:var(--muted);font-size:13px}
+  .note{background:#f59e0b0d;border:1px solid #f59e0b33;border-radius:12px;padding:16px 18px;color:#f5d9a8;font-size:14px;margin-top:22px}
+  footer{padding:44px 0 60px;border-top:1px solid var(--border);color:var(--faint);font-size:13.5px;text-align:center}
+  footer a{color:var(--muted)}
+  .kquote{font-size:15px;color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="tag">🛰️ open source · MIT</span>
+  <h1>Map what's there.<br/><span class="accent">Prove what you claim.</span> Change nothing.</h1>
+  <p class="sub"><b style="color:var(--text)">lan-recon</b> is a read-only network reconnaissance tool that <b style="color:var(--text)">refuses to run unauthorized</b> and <b style="color:var(--text)">never presents a guess as a fact</b> — evidence-graded LAN discovery &amp; asset inventory, plus the assessment methodology behind it.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/convenientlymike/lan-recon">View on GitHub →</a>
+    <a class="btn ghost" href="#try">See it in action</a>
+  </div>
+  <div class="pills">
+    <span class="pill">🔒 <b>Read-only</b> by construction</span>
+    <span class="pill">🛑 <b>Authorization</b>-gated</span>
+    <span class="pill">🟢 <b>Evidence</b>-graded</span>
+    <span class="pill">💻 macOS <b>+</b> Linux</span>
+  </div>
+</header>
+
+<section id="why">
+  <h2>Why it exists</h2>
+  <p class="lead">Most networks have never been inventoried — nobody has the full list of what's connected, let alone what it exposes. lan-recon produces that list, <b style="color:var(--text)">completely and honestly</b>, without ever logging in, writing, or disrupting a thing. The "honestly" is the point: anyone can paste a scanner's raw output; the value is telling you which lines are <em>proven</em>, which are <em>inferred</em>, and which are <em>unknown</em> — and being right about it.</p>
+  <div class="grid">
+    <div class="card">
+      <h3><span class="ico">🛑</span> Authorization first</h3>
+      <p>Security tooling is dual-use — the same probe is a service when the owner asked and a crime when they didn't. The tool's authorization gate makes affirming scope a step you can't skip. It's negative-control-tested in CI: a run without an authorizer <b>fails</b>.</p>
+    </div>
+    <div class="card">
+      <h3><span class="ico v">🟢</span> Honesty-banding</h3>
+      <p>Every observation is graded <b class="c-gr">VERIFIED</b> (a byproduct proved it), <b class="c-am">INFERRED</b> (indirect signal), or <b style="color:var(--slate)">UNKNOWN</b> — and the report says so, out loud, next to the claim. A finding built on a guess is worse than no finding.</p>
+    </div>
+  </div>
+</section>
+
+<section id="try">
+  <h2>See it in action</h2>
+  <p class="lead">Read-only by construction — it climbs a technique ladder (cheapest signal first) and grades each host by the strongest evidence it obtains.</p>
+  <div class="term">
+    <div class="bar"><span class="dot" style="background:#ff5f56"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#27c93f"></span></div>
+<pre><span class="c-mu">$</span> ./lan-recon.sh <span class="c-cy">--subnet</span> 192.168.1.0/24 <span class="c-cy">--jump</span> user@onsite-box
+
+  <span class="c-am">╔══════════════════════════════════════════════════════════╗</span>
+  <span class="c-am">║  AUTHORIZATION REQUIRED — read AUTHORIZATION.md           ║</span>
+  <span class="c-am">║  Proceed ONLY with the owner's written, scoped consent.   ║</span>
+  <span class="c-am">╚══════════════════════════════════════════════════════════╝</span>
+  To confirm you are authorized, re-type the subnet: <span class="c-gr">192.168.1.0/24</span>
+
+<span class="c-cy">→</span> [1/4] host sweep + ARP …           found <span class="c-gr">14</span> live host(s).
+<span class="c-cy">→</span> [2/4] per-host fingerprint …       probed 14
+<span class="c-cy">→</span> [3/4] mDNS/Bonjour enumeration …   service types captured.
+<span class="c-cy">→</span> [4/4] assembling report …          <span class="c-gr">→</span> inventory.md
+</pre>
+  </div>
+
+  <p class="lead" style="margin-top:30px">…and the inventory it produces — every host <b style="color:var(--text)">evidence-graded</b>:</p>
+  <table class="tbl">
+    <thead><tr><th>IP</th><th>Device</th><th>Vendor</th><th>Open ports</th><th>Confidence</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">192.0.2.1</td><td>Router / gateway</td><td>(router vendor)</td><td class="mono">53</td><td><span class="band b-v">VERIFIED</span></td></tr>
+      <tr><td class="mono">192.0.2.20</td><td>Windows workstation</td><td>Dell</td><td class="mono">135, 139, 445</td><td><span class="band b-v">VERIFIED</span></td></tr>
+      <tr><td class="mono">192.0.2.31</td><td>Network printer</td><td>HP</td><td class="mono">80, 443, 9100</td><td><span class="band b-v">VERIFIED</span></td></tr>
+      <tr><td class="mono">192.0.2.60</td><td>IoT / smart-home</td><td>Samsung</td><td class="mono">— (cloud-tethered)</td><td><span class="band b-i">INFERRED</span></td></tr>
+      <tr><td class="mono">192.0.2.77</td><td>Unidentifiable device</td><td>(withheld OUI)</td><td class="mono">— (all closed)</td><td><span class="band b-u">UNKNOWN</span></td></tr>
+    </tbody>
+  </table>
+  <p class="mono" style="color:var(--faint);font-size:12.5px;margin-top:12px">Synthetic example (RFC 5737 documentation IPs). The UNKNOWN host is exactly the device an assessor recommends physically identifying — flagged, not guessed.</p>
+</section>
+
+<section id="features">
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="card"><h3><span class="ico">🧹</span> Discover</h3><p>Bounded host sweep + ARP, then per-host read-only fingerprinting: TCP connect-probes, HTTP/SSH banners, anonymous NetBIOS, MAC-vendor, TTL — and mDNS/Bonjour enumeration (the richest identity signal on Apple/IoT networks).</p></div>
+    <div class="card"><h3><span class="ico v">🎯</span> Grade</h3><p>Never a guess dressed as a fact. An open port is only ever reported as <em>open</em> — never promoted to a confirmed service until a banner proves it.</p></div>
+    <div class="card"><h3><span class="ico">🌐</span> External surface</h3><p>A companion tool checks what's exposed to the <b>internet</b> — internet-facing RDP, SMB, databases, telnet — the #1 SMB breach vector, each open port risk-classified.</p></div>
+    <div class="card"><h3><span class="ico v">📋</span> Report</h3><p>Turn the inventory + findings into a scaffolded client report — the mechanical assembly done, the human-judgment sections flagged, never faked.</p></div>
+  </div>
+</section>
+
+<section id="method">
+  <h2>The methodology behind it</h2>
+  <p class="lead">The tool is Phase 2 of a four-phase assessment — framework-aligned (NIST SP 800-115 / PTES) but right-sized for a five-person office, not a compliance binder.</p>
+  <div class="steps">
+    <div class="step"><div class="n">01</div><h4>Scope &amp; authorize</h4><p>Written scope, rules of engagement, verified ownership.</p></div>
+    <div class="step"><div class="n">02</div><h4>Discover &amp; inventory</h4><p>Enumerate every host, identify it, map the topology.</p></div>
+    <div class="step"><div class="n">03</div><h4>Assess vulnerability</h4><p>Exposed / misconfigured / unpatched surface, ranked by business impact.</p></div>
+    <div class="step"><div class="n">04</div><h4>Report &amp; remediate</h4><p>Prioritized plan, then re-test to prove each fix is closed.</p></div>
+  </div>
+  <div class="note">⚠️ <b>For authorized use only.</b> Only assess networks you own or have explicit written permission to test. Read-only ≠ invisible: probe traffic appears in logs/IDS and must be covered by authorization.</div>
+</section>
+
+<section id="get">
+  <h2>Get started</h2>
+  <p class="lead">Zero-risk preview — see exactly what it <em>would</em> do, no target needed:</p>
+  <div class="term">
+    <div class="bar"><span class="dot" style="background:#ff5f56"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#27c93f"></span></div>
+<pre><span class="c-mu">$</span> git clone https://github.com/convenientlymike/lan-recon.git &amp;&amp; cd lan-recon
+<span class="c-mu">$</span> ./toolkit/lan-recon.sh <span class="c-cy">--subnet</span> 192.168.1.0/24 <span class="c-cy">--dry-run</span></pre>
+  </div>
+  <div class="cta" style="justify-content:flex-start;margin-top:26px">
+    <a class="btn primary" href="https://github.com/convenientlymike/lan-recon">Full docs on GitHub →</a>
+    <a class="btn ghost" href="https://github.com/convenientlymike/lan-recon/blob/main/methodology/README.md">Read the methodology</a>
+  </div>
+</section>
+
+<footer>
+  <p class="kquote">"Anyone can run a scanner. The value is telling you which findings are real — and being right about it."</p>
+  <p style="margin-top:14px"><b style="color:var(--muted)">lan-recon</b> · MIT · read-only · authorization-gated · <a href="https://github.com/convenientlymike/lan-recon">github.com/convenientlymike/lan-recon</a></p>
+</footer>
+
+</div>
+</body>
+</html>

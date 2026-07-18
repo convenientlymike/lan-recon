@@ -24,8 +24,20 @@ a state-changing packet** (read-only banner-grabbing only).
 ![Posture: read--only](https://img.shields.io/badge/posture-read--only-16a34a.svg)
 &nbsp;
 ![Authorization: gated](https://img.shields.io/badge/authorization-gated-a855f7.svg)
+&nbsp;
+[![Live demo](https://img.shields.io/badge/▶_live_demo-page-22d3ee.svg)](https://convenientlymike.github.io/lan-recon/)
+
+<br/>
+
+<a href="https://convenientlymike.github.io/lan-recon/"><img src="docs/screenshots/landing-hero.png" alt="lan-recon — map what's there, prove what you claim, change nothing" width="100%" /></a>
 
 </div>
+
+---
+
+## ▶️ See it live
+
+**[convenientlymike.github.io/lan-recon →](https://convenientlymike.github.io/lan-recon/)** — a one-page walkthrough with a live sample inventory, no clone required.
 
 ---
 
@@ -46,6 +58,8 @@ becomes a repeatable engagement, not a one-off dump.
 ---
 
 ## What it looks like
+
+<p align="center"><img src="docs/screenshots/landing-inventory.png" alt="lan-recon terminal run and the evidence-graded inventory it produces" width="100%" /></p>
 
 ```
 $ ./lan-recon.sh --subnet 192.168.1.0/24 --jump user@onsite-box
