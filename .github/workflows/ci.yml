@@ -13,13 +13,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-smoke:
+  shellcheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: ShellCheck (lint the tool)
         run: shellcheck toolkit/lan-recon.sh
+
+  smoke:
+    # Validate the tool on both supported OSes (macOS-first, Linux-portable).
+    # Windows is intentionally excluded — the tool relies on Unix tooling
+    # (arp / dns-sd / smbutil) and does not target Windows.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Syntax check
         run: bash -n toolkit/lan-recon.sh
@@ -43,4 +54,4 @@ jobs:
             echo "FAIL: ran with no target"; exit 1
           fi
 
-          echo "PASS: authorization gate + negative controls bite"
+          echo "PASS: authorization gate + negative controls bite on ${{ matrix.os }}"

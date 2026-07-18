@@ -148,6 +148,27 @@ Full guides in [`methodology/`](methodology/) · evidence standard in
 
 ---
 
+## 🏗 How it works
+
+`lan-recon` climbs a read-only **technique ladder** — the cheapest, least-intrusive
+signal first — and grades each host by the strongest evidence it obtains:
+
+```
+  live host?   ping sweep + ARP          →  VERIFIED (host is live)
+  vendor?      MAC OUI lookup            →  INFERRED (NIC maker — a hint)
+  services?    TCP connect-probe         →  VERIFIED (port is open)
+  identity?    banner / mDNS / NetBIOS   →  VERIFIED (device named + pinned)
+  OS family?   TTL                       →  INFERRED (spoofable hint)
+```
+
+Each host is probed in a **single bundled, timeout-wrapped pass** (optionally routed
+through an SSH `--jump` host so the probes originate on-site). Nothing logs in,
+writes, or blocks — and an open port is only ever reported as *open*, never promoted
+to a confirmed service until a banner proves it. That's the whole design in one line:
+**map what's there, prove what you claim, change nothing.**
+
+---
+
 ## 🔒 The ethos
 
 Two rules make the difference between a scanner and a professional assessment, and
