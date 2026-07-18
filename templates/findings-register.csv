@@ -1,0 +1,2 @@
+id,title,assets,class,severity,likelihood,evidence_band,evidence,business_impact,remediation,effort,status
+NS-000,"<short finding title>","<ip(s)/host(s)>","<exposed-service|default-cred|unpatched-eol|misconfig|segmentation|wireless|info-disclosure>","<Critical|High|Medium|Low|Info>","<High|Med|Low>","<VERIFIED|INFERRED|UNKNOWN>","<the byproduct that proves it>","<what it means for this business>","<the concrete fix>","<Low|Med|High>","<Open|Remediated|Verified-Closed>"

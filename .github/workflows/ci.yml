@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md', 'LICENSE', 'examples/**']
+  pull_request:
+    paths-ignore: ['**/*.md', 'LICENSE', 'examples/**']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck (lint the tool)
+        run: shellcheck toolkit/lan-recon.sh
+
+      - name: Syntax check
+        run: bash -n toolkit/lan-recon.sh
+
+      - name: Smoke — authorization gate + negative controls must bite
+        run: |
+          set -e
+          chmod +x toolkit/lan-recon.sh
+
+          echo "→ dry-run with proper authorization should succeed"
+          ./toolkit/lan-recon.sh --subnet 192.168.1.0/24 --yes \
+            --authorized-by "CI test" --dry-run
+
+          echo "→ --yes WITHOUT --authorized-by must FAIL (gate bites)"
+          if ./toolkit/lan-recon.sh --subnet 192.168.1.0/24 --yes --dry-run 2>/dev/null; then
+            echo "FAIL: authorization gate did not bite"; exit 1
+          fi
+
+          echo "→ no subnet must FAIL"
+          if ./toolkit/lan-recon.sh --yes --authorized-by x --dry-run 2>/dev/null; then
+            echo "FAIL: ran with no target"; exit 1
+          fi
+
+          echo "PASS: authorization gate + negative controls bite"

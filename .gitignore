@@ -1,0 +1,25 @@
+# Recon output — NEVER commit real assessment data
+recon-*/
+**/evidence/
+*.pcap
+*.pcapng
+hosts-*.txt
+arp-*.txt
+
+# Secrets / credentials (never)
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+credentials*
+secrets*
+
+# OS / editor cruft
+.DS_Store
+*.swp
+*.tmp
+*~
+.idea/
+.vscode/
