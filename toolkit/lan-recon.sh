@@ -208,13 +208,13 @@ build_report() {
 # ---- main -------------------------------------------------------------------
 main() {
   authorization_gate
-  mkdir -p "$OUTDIR/evidence"
 
   if [ "$DRYRUN" = 1 ]; then
     echo ""; echo "DRY RUN — would probe ${BASE}.1-254 from ${JUMP:-local}, ports: $PORTS"
     echo "would write to: $OUTDIR"; exit 0
   fi
 
+  mkdir -p "$OUTDIR/evidence"
   have perl || die "perl required (for bounded timeouts)"
   sweep_and_arp
   echo "→ [2/4] per-host fingerprint (read-only)…"
