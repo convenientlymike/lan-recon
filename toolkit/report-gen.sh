@@ -79,7 +79,7 @@ sev_rank() { case "$(echo "$1" | tr '[:upper:]' '[:lower:]')" in
   echo ""
   if [ -n "$FINDINGS" ]; then
     # sort findings by severity, then emit one section each (skip header + template row)
-    tail -n +2 "$FINDINGS" | grep -vE '^NS-000' | while IFS=, read -r id title assets _ severity _ band evidence impact remediation effort _; do
+    tail -n +2 "$FINDINGS" | { grep -vE '^NS-000' || true; } | while IFS=, read -r id title assets _ severity _ band evidence impact remediation effort _; do
       [ -n "$id" ] || continue
       printf '%s\t%s\n' "$(sev_rank "$severity")" "$id|$title|$assets|$severity|$band|$evidence|$impact|$remediation|$effort"
     done | sort -n | cut -f2- | while IFS='|' read -r id title assets severity band evidence impact remediation effort; do
@@ -107,7 +107,7 @@ sev_rank() { case "$(echo "$1" | tr '[:upper:]' '[:lower:]')" in
   echo "|---|---|---|---|---|"
   if [ -n "$FINDINGS" ]; then
     i=0
-    tail -n +2 "$FINDINGS" | grep -vE '^NS-000' | while IFS=, read -r id title assets _ severity _ band evidence impact remediation effort _; do
+    tail -n +2 "$FINDINGS" | { grep -vE '^NS-000' || true; } | while IFS=, read -r id title assets _ severity _ band evidence impact remediation effort _; do
       [ -n "$id" ] || continue
       printf '%s\t%s\n' "$(sev_rank "$severity")" "$id|${remediation//\"/}|${effort//\"/}"
     done | sort -n | cut -f2- | while IFS='|' read -r id remediation effort; do

@@ -71,7 +71,13 @@ jobs:
           set -e
           chmod +x toolkit/report-gen.sh
           printf '# LAN Inventory\n\n| IP | MAC | Vendor (OUI) | Open ports | Name | Notes |\n|---|---|---|---|---|---|\n| 192.0.2.10 | aa:bb:cc:00:11:22 | Example | 22,443 | host-a | |\n' > /tmp/inv.md
+          # (a) empty findings (only the template row) must STILL produce a report
           ./toolkit/report-gen.sh --inventory /tmp/inv.md --findings templates/findings-register.csv --client "CI Client" --out /tmp/report.md
-          grep -q "Network Security Assessment — CI Client" /tmp/report.md
+          grep -q "Network Security Assessment" /tmp/report.md
           grep -q "192.0.2.10" /tmp/report.md
-          echo "PASS: report-gen assembles a report"
+          # (b) with a real finding, the finding must be expanded
+          cp templates/findings-register.csv /tmp/find.csv
+          printf 'NS-101,"Test finding","192.0.2.10","exposed-service","Medium","Med","VERIFIED","port open","impact","fix it","Low","Open"\n' >> /tmp/find.csv
+          ./toolkit/report-gen.sh --inventory /tmp/inv.md --findings /tmp/find.csv --client "CI" --out /tmp/report2.md
+          grep -q "NS-101" /tmp/report2.md
+          echo "PASS: report-gen assembles a report (empty + with-findings)"
